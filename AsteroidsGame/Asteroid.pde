@@ -1,4 +1,4 @@
-class Asteroids {
+class Asteroids extends Mover {
   protected float xPos, yPos;
   protected float xPos2, yPos2;
   protected float xPos3, yPos3;
@@ -17,6 +17,7 @@ class Asteroids {
   protected float X5, Y5;
 
   Asteroids(float xPos, float yPos, int index) {
+    super(xPos, yPos);
     this.xPos = xPos;
     this.yPos = yPos;
     xPos2 = -50;
@@ -31,7 +32,7 @@ class Asteroids {
       dir = random(30, 140);
     }
 
-    if (random(1) >= 0.8){
+    if (random(1) >= 0.8) {
       numOfAsteroids = 2;
     }
     HIT = false;
@@ -129,7 +130,7 @@ class Asteroids {
       popMatrix();
     }
   }
- 
+
   void move() {
     if (numOfAsteroids == 1) {
       if (xPos > width + 20)
@@ -261,6 +262,26 @@ class Asteroids {
 
   boolean getHit3() {
     return HIT3;
+  }
+
+  float getRadius() {
+    return 0;
+  }
+
+  float getDir() {
+    return dir;
+  }
+
+  void setDir(float dir) {
+    direction = dir;
+  }
+
+  void setSpeed(float s) {
+    speed = s;
+  }
+
+  float getSpeed() {
+    return speed;
   }
 
   void setHit(boolean t) {

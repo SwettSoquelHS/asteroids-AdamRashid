@@ -1,8 +1,9 @@
-class Ship {
+class Ship extends Mover {
   protected float xPos, yPos;
   protected float speed, direction;
   protected int SHIP_LIFE;
   Ship(float xPos, float yPos) {
+    super(xPos, yPos);
     this.xPos = xPos;
     this.yPos = yPos;
     SHIP_LIFE = 1;
@@ -86,5 +87,9 @@ class Ship {
 
   void setSpeed(float s) {
     speed = s;
+  }
+
+  float getRadius() {
+    return 0;
   }
 }

@@ -25,7 +25,6 @@ boolean MOVE_FORWARD = false;
 boolean LIGHT_FIRE = false;
 boolean SHOOT_BULLET = false;
 boolean SHOOTING_BULLET = false;
-boolean AUTO_RELOAD = false;
 
 void setup() {
   size(700, 500);
@@ -75,6 +74,11 @@ void game() {
   text("Score: " + score, width - 70, 20);
 
   ultimate();
+  
+  if (SUPER_MODE) {
+    shot = new Shoot[1000];
+    fireSpeed = 0;
+  }
 
   for (int i = 0; i < stars.length- 1; i++) {
     stars[i].move();
@@ -164,15 +168,7 @@ void game() {
 
   update_fire(); 
   draw_fire();
-
-  if (AUTO_RELOAD) {
-    if (INDEX_OF_SHOT == shot.length) {
-      shot = new Shoot[1000];
-      INDEX_OF_SHOT = 0;
-      ammo = shot.length;
-    }
-  }
-
+  
   if (spaceship.getShipLife() == 0) {
     gameScreen = 2;
   }
@@ -230,21 +226,22 @@ void keyReleased() {
 
 void ultimate() {
   superMeter = score;
-  
-  if(superMeter >= 1000){
+
+  if (superMeter >= 1000) {
     superMeter = 1000;
   }
-    
+
   if (key == 't' && superMeter >= 1000) {
+    ammo = 500;
+    INDEX_OF_SHOT = 0;
     SUPER_MODE = true;
   }
-  
-  if(SUPER_MODE){
+
+  if (SUPER_MODE) {
+    shot = new Shoot[500];
     fireSpeed = 0;
-    AUTO_RELOAD = true;
   } else {
     fireSpeed = 150;
-    AUTO_RELOAD = false;
   }
 
   pushMatrix();
@@ -343,12 +340,6 @@ void create_fire() {
   currentflame=nextflame;
 }
 
-void superTimer(){
-  int passedTime = millis() - superTime;
-  if (passedTime > superLength) {
-    
-  }
-}
 
 void fireRate() {
   int passedTime = millis() - shotTime;

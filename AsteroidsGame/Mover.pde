@@ -5,17 +5,17 @@ interface Movable {
   /*
     Return the x location of the Movable
    */
-  float getX();
+  float getXpos();
 
   /*
     Return the y location of the Movable
    */
-  float getY();
+  float getYpos();
 
   /*
     Return the direction of the Movable in degrees.
    */
-  float getDirection();
+  float getDir();
 
   /*
    Return the speed of the Movable.
@@ -35,7 +35,7 @@ interface Movable {
   /* 
    Sets the direction of the Movable
    */
-  void setDirection(float newDirectionInDegrees);
+  void setDir(float newDirectionInDegrees);
 
   /* 
    Sets the speed of the Movable
@@ -67,7 +67,7 @@ interface Movable {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  Abstract base class Mover 
  */
-abstract class Mover {// implements Movable {
+abstract class Mover implements Movable {
 
   protected float x, y;
   protected float speed;
