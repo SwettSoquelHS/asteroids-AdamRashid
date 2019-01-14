@@ -15,6 +15,18 @@ class Asteroids extends Mover {
   protected float X3, Y3;
   protected float X4, Y4;
   protected float X5, Y5;
+  
+  protected float X6, Y6;
+  protected float X7, Y7;
+  protected float X8, Y8;
+  protected float X9, Y9;
+  protected float X10, Y10;
+  
+  protected float X11, Y11;
+  protected float X12, Y12;
+  protected float X13, Y13;
+  protected float X14, Y14;
+  protected float X15, Y15;
 
   Asteroids(float xPos, float yPos, int index) {
     super(xPos, yPos);
@@ -38,7 +50,7 @@ class Asteroids extends Mover {
     HIT = false;
     HIT2 = false;
     HIT3 = false;
-
+    //Asteroid 1
     X1 = random(-5, 20);
     Y1 = random(20, 40);
 
@@ -53,20 +65,55 @@ class Asteroids extends Mover {
 
     X5 = random(-25, -20);
     Y5 = random(10, 20);
+
+    //Asteroid 2
+    X6 = random(-7, -12);
+    Y6 = random(-3, 3);
+
+    X7 = random(-4, -10);
+    Y7 = random(7, 13);
+
+    X8 = random(-3, 3);
+    Y8 = random(3, 7);
+
+    X9 = random(4, 9);
+    Y9 = random(3, 9);
+
+    X10 = random(-25, -20);
+    Y10 = random(10, 20);
+    
+    //Asteroid 3
+    X11 = random(-5, 20);
+    Y11 = random(20, 40);
+
+    X12 = random(20, 40);
+    Y12 = random(-10, 10);
+
+    X13 = random(-10, 10);
+    Y13 = random(-30, -20);
+
+    X14 = random(-20, -10);
+    Y14 = random(-20, -10);
+
+    X15 = random(-25, -20);
+    Y15 = random(10, 20);
   }
 
   void show() {
     if (numOfAsteroids == 1) {
       pushMatrix();
-      stroke(255);
-      fill(200);
+      stroke(0);
+      fill(random(180, 200), 70);  
       translate(xPos, yPos);
-      rotate(radians(tilt));
-      line(X1, Y1, X2, Y2);
-      line(X2, Y2, X3, Y3);
-      line(X3, Y3, X4, Y4);
-      line(X4, Y4, X5, Y5);
-      line(X5, Y5, X1, Y1);
+      rotate(radians(tilt)); 
+      beginShape();
+      vertex(X1, Y1);
+      vertex(X2, Y2);
+      vertex(X3, Y3);
+      vertex(X4, Y4);
+      vertex(X5, Y5);
+      vertex(X1, Y1);
+      endShape();
       popMatrix();
     } else if (numOfAsteroids == 2) {
       pushMatrix();
@@ -75,9 +122,9 @@ class Asteroids extends Mover {
       translate(xPos2, yPos2);
       rotate(radians(tilt));
       scale(1.8);
-      line(-10, 0, -7, 10);
-      line(-7, 10, 0, 5);
-      line(0, 5, 7, 6);
+      line(X6, Y6, X7, Y7);
+      line(X7, Y7, X8, Y8);
+      line(X8, Y8, X9, Y9);
       line(7, 6, 4, -5);
       line (4, -5, 0, 0);
       line(0, 0, -3, -6);
