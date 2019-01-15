@@ -67,36 +67,28 @@ class Asteroids extends Mover {
     Y5 = random(10, 20);
 
     //Asteroid 2
-    X6 = random(-7, -12);
-    Y6 = random(-3, 3);
+    X6 = random(-8, -10);
+    Y6 = random(-2, 2);
 
-    X7 = random(-4, -10);
-    Y7 = random(7, 13);
+    X7 = random(-6, -9);
+    Y7 = random(8, 11);
 
-    X8 = random(-3, 3);
-    Y8 = random(3, 7);
+    X8 = random(-2, 1);
+    Y8 = random(2, 5);
 
-    X9 = random(4, 9);
-    Y9 = random(3, 9);
+    X9 = random(5, 8);
+    Y9 = random(5, 8);
 
-    X10 = random(-25, -20);
-    Y10 = random(10, 20);
+    X10 = random(3, 6);
+    Y10 = random(-7, -3);
+    
+    X11 = random(-1, 1);
+    Y11 = random(-1, 1);
+
+    X12 = random(2, -4);
+    Y12 = random(-5, -7);
     
     //Asteroid 3
-    X11 = random(-5, 20);
-    Y11 = random(20, 40);
-
-    X12 = random(20, 40);
-    Y12 = random(-10, 10);
-
-    X13 = random(-10, 10);
-    Y13 = random(-30, -20);
-
-    X14 = random(-20, -10);
-    Y14 = random(-20, -10);
-
-    X15 = random(-25, -20);
-    Y15 = random(10, 20);
   }
 
   void show() {
@@ -117,63 +109,75 @@ class Asteroids extends Mover {
       popMatrix();
     } else if (numOfAsteroids == 2) {
       pushMatrix();
-      stroke(255);
-      fill(200);
+      stroke(0);
+      fill(random(180, 200), 70);
       translate(xPos2, yPos2);
       rotate(radians(tilt));
-      scale(1.8);
-      line(X6, Y6, X7, Y7);
-      line(X7, Y7, X8, Y8);
-      line(X8, Y8, X9, Y9);
-      line(7, 6, 4, -5);
-      line (4, -5, 0, 0);
-      line(0, 0, -3, -6);
-      line(-3, -6, -10, 0);
+      scale(2.5);
+      beginShape();
+      vertex(X6, Y6);
+      vertex(X7, Y7);
+      vertex(X8, Y8);
+      vertex(X9, Y9);
+      vertex(X10, Y10);
+      vertex(X11, Y11);
+      vertex(X12, Y12);
+      vertex(X6, Y6);
+      endShape();
       popMatrix();
 
       pushMatrix();
-      stroke(255);
-      fill(200);
+      stroke(0);
+      fill(random(180, 200), 70);
       translate(xPos3, yPos3);
       rotate(radians(tilt));
-      scale(1.8);
-      line(-10, 0, -7, 10);
-      line(-7, 10, 0, 5);
-      line(0, 5, 7, 6);
-      line(7, 6, 4, -5);
-      line (4, -5, 0, 0);
-      line(0, 0, -3, -6);
-      line(-3, -6, -10, 0);
+      scale(2.5);
+      beginShape();
+      vertex(X6, Y6);
+      vertex(X7, Y7);
+      vertex(X8, Y8);
+      vertex(X9, Y9);
+      vertex(X10, Y10);
+      vertex(X11, Y11);
+      vertex(X12, Y12);
+      vertex(X6, Y6);
+      endShape();
       popMatrix();
     } else if (numOfAsteroids == 3) {
       pushMatrix();
-      stroke(255);
-      fill(200);
+      stroke(0);
+      fill(random(180, 200), 70);
       translate(xPos2, yPos2);
       rotate(radians(tilt));
-      scale(1.8);
-      line(-10, 0, -7, 10);
-      line(-7, 10, 0, 5);
-      line(0, 5, 7, 6);
-      line(7, 6, 4, -5);
-      line (4, -5, 0, 0);
-      line(0, 0, -3, -6);
-      line(-3, -6, -10, 0);
+      scale(2.5);
+      beginShape();
+      vertex(X6, Y6);
+      vertex(X7, Y7);
+      vertex(X8, Y8);
+      vertex(X9, Y9);
+      vertex(X10, Y10);
+      vertex(X11, Y11);
+      vertex(X12, Y12);
+      vertex(X6, Y6);
+      endShape();
       popMatrix();
     } else if (numOfAsteroids == 4) {
       pushMatrix();
-      stroke(255);
-      fill(200);
+      stroke(0);
+      fill(random(180, 200), 70);
       translate(xPos3, yPos3);
       rotate(radians(tilt));
-      scale(1.8);
-      line(-10, 0, -7, 10);
-      line(-7, 10, 0, 5);
-      line(0, 5, 7, 6);
-      line(7, 6, 4, -5);
-      line (4, -5, 0, 0);
-      line(0, 0, -3, -6);
-      line(-3, -6, -10, 0);
+      scale(2.5);
+      beginShape();
+      vertex(X6, Y6);
+      vertex(X7, Y7);
+      vertex(X8, Y8);
+      vertex(X9, Y9);
+      vertex(X10, Y10);
+      vertex(X11, Y11);
+      vertex(X12, Y12);
+      vertex(X6, Y6);
+      endShape();
       popMatrix();
     }
   }
