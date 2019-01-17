@@ -13,7 +13,6 @@ Ship spaceship;
 float[][] fire = new float [100000][15];
 float currentflamef, nextflamef;
 int currentflame=0, nextflame;
-boolean SUPER_MODE = false;
 boolean ROTATE_LEFT = false;
 boolean ROTATE_RIGHT = false;
 boolean MOVE_FORWARD = false;
@@ -69,12 +68,6 @@ void game() {
   if (spaceship.getAmmo() == 0)
     text("Reload", width - 40, height - 20);
 
-  ultimate();
-  spaceship.move();
-  spaceship.show();
-  spaceship.checkCollision();
-  createAsteroids();
-
   for (int i = 0; i < stars.length- 1; i++) {
     stars[i].move();
   }
@@ -82,7 +75,11 @@ void game() {
     stars[i].show();
   }
 
-
+  ultimate();
+  spaceship.move();
+  spaceship.show();
+  spaceship.checkCollision();
+  createAsteroids();
   for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
     spacefield[i].move();
   }
@@ -90,9 +87,20 @@ void game() {
   for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
     spacefield[i].show();
   }
-
+ 
+  //This fires the bullet
   if (SHOOTING_BULLET) {
     spaceship.fireBullet();
+  }
+  
+  //This will auto fire the bullet if super is activated
+  if(spaceship.getSuperMode()){
+    spaceship.fireBullet();
+    if(spaceship.getAmmo() == 0){
+      spaceship.setSuperMode(false);
+      spaceship.setAmmo(50);
+      spaceship.setIndex(0);
+    }
   }
 
   //Update x,y position
@@ -189,7 +197,7 @@ void keyReleased() {
     LIGHT_FIRE = false;
   }
 
-  if (key == 'r' || key == 'R') {
+  if ((key == 'r' || key == 'R') && !spaceship.getSuperMode()) {
     spaceship.reload();
   }
 
@@ -205,19 +213,11 @@ void ultimate() {
     superMeter = 1000;
   }
 
-  if (key == 't' && superMeter >= 0) {
-    //ammo = 500;
-    //INDEX_OF_SHOT = 0;
-    SUPER_MODE = true;
+  if (key == 't' && superMeter >= 1000) {
+    spaceship.setAmmo(500);
+    spaceship.setIndex(0);
+    spaceship.setSuperMode(true);
   }
-
-  if (SUPER_MODE) {
-    //shot = new Shoot[500];
-    //fireSpeed = 0;
-  } else {
-    //fireSpeed = 150;
-  }
-
   pushMatrix();
   stroke(0);
   fill(255);
@@ -237,13 +237,10 @@ void reset() {
   x_pos = width/2.0;
   y_pos = height/2.0;
   NUM_OF_ASTEROIDS = 0;
-  //INDEX_OF_SHOT = 0;
-  //ammo = shot.length;
   ROTATE_LEFT = false;
   ROTATE_RIGHT = false;
   MOVE_FORWARD = false;
   LIGHT_FIRE = false;
-  //SHOOT_BULLET = false;
   SHOOTING_BULLET = false;
   spaceship = new Ship(x_pos, y_pos);
 

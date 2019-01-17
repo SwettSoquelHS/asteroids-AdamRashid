@@ -7,6 +7,8 @@ class Ship extends Mover {
   protected int fireSpeed = 150; //Amount of delay between each bullet in milliseconds
   protected int shotTime;
   protected Shoot[] shot;
+  protected Shoot[] superShot;
+  protected boolean SUPER_MODE;
   Ship(float xPos, float yPos) {
     super(xPos, yPos);
     this.xPos = xPos;
@@ -15,8 +17,10 @@ class Ship extends Mover {
     speed = 0;
     direction = 45;
     shot = new Shoot[50];
+    superShot = new Shoot[500];
+    SUPER_MODE = false;
   }
-  
+
   void show() {
     if (SHIP_LIFE > 0) {
       pushMatrix();
@@ -37,14 +41,23 @@ class Ship extends Mover {
       line(6, -10, 4, -11);
       popMatrix();
     }
-    
+
     //This show the bullet on the screen and moves it
-    for (int i = 0; i < INDEX_OF_SHOT; i++) {
-      shot[i].move();
-      shot[i].show();
+    if (!SUPER_MODE) {
+      for (int i = 0; i < INDEX_OF_SHOT; i++) {
+        shot[i].move();
+        shot[i].show();
+      }
+    }
+
+    if (SUPER_MODE) {
+      for (int i = 0; i < INDEX_OF_SHOT; i++) {
+        superShot[i].move();
+        superShot[i].show();
+      }
     }
   }
-  
+
 
   void move() {
     xPos = xPos + speed * (float)Math.cos(radians(direction));
@@ -76,35 +89,58 @@ class Ship extends Mover {
 
   void fireBullet() {
     //This defines the bullet in the array as well as limit the firerate of the ship
-    if (INDEX_OF_SHOT < shot.length) {
+    if (INDEX_OF_SHOT < shot.length && !SUPER_MODE) {
       fireRate();
     }
-  }
-  
-  void reload(){
-    ammo = shot.length;
-    INDEX_OF_SHOT = 0;
-  }
-  
-  void checkCollision(){
-    //This checks for collision between the bullet and the asteroids
-    for (int i = 0; i < INDEX_OF_SHOT; i++) {
-      for (int j = 0; j < NUM_OF_ASTEROIDS; j++) {
-        spacefield[j].crack(shot[i].getXpos(), shot[i].getYpos());
+
+    if (SUPER_MODE) {
+      if (INDEX_OF_SHOT < superShot.length) {
+        superShot[INDEX_OF_SHOT] = new Shoot(xPos, yPos, direction, INDEX_OF_SHOT); 
+        INDEX_OF_SHOT++;
+        ammo--;
       }
     }
   }
-  
-  void fireRate() {
-  int passedTime = millis() - shotTime;
-  if (passedTime > fireSpeed) {
-    shot[INDEX_OF_SHOT] = new Shoot(xPos, yPos, direction, INDEX_OF_SHOT); 
-    INDEX_OF_SHOT++;
-    ammo--;
-    println("pew");
-    shotTime = millis();
+
+  void reload() {
+    if (!SUPER_MODE)
+      ammo = shot.length;
+
+    if (SUPER_MODE)
+      ammo = superShot.length;
+
+    INDEX_OF_SHOT = 0;
   }
-}
+
+  void checkCollision() {
+    //This checks for collision between the bullet and the asteroids
+    if (!SUPER_MODE) {
+      for (int i = 0; i < INDEX_OF_SHOT; i++) {
+        for (int j = 0; j < NUM_OF_ASTEROIDS; j++) {
+          spacefield[j].crack(shot[i].getXpos(), shot[i].getYpos());
+        }
+      }
+    }
+    
+    if(SUPER_MODE){
+      for (int i = 0; i < INDEX_OF_SHOT; i++) {
+        for (int j = 0; j < NUM_OF_ASTEROIDS; j++) {
+          spacefield[j].crack(superShot[i].getXpos(), superShot[i].getYpos());
+        }
+      }
+    }
+  }
+
+  void fireRate() {
+    int passedTime = millis() - shotTime;
+    if (passedTime > fireSpeed) {
+      shot[INDEX_OF_SHOT] = new Shoot(xPos, yPos, direction, INDEX_OF_SHOT); 
+      INDEX_OF_SHOT++;
+      ammo--;
+      println("pew");
+      shotTime = millis();
+    }
+  }
 
   float getXpos() {
     return xPos;
@@ -137,8 +173,27 @@ class Ship extends Mover {
   float getRadius() {
     return 0;
   }
-  
-  int getAmmo(){
+
+  int getAmmo() {
     return ammo;
+  }
+
+  void setAmmo(int x) {
+    ammo = x;
+  }
+
+  void setIndex(int x) {
+    INDEX_OF_SHOT = x;
+  }
+  void setFireRate(int x) {
+    fireSpeed = x;
+  }
+
+  void setSuperMode(boolean x) {
+    SUPER_MODE = x;
+  }
+  
+  boolean getSuperMode(){
+    return SUPER_MODE;
   }
 }

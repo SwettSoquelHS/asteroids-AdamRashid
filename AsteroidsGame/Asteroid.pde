@@ -15,13 +15,13 @@ class Asteroids extends Mover {
   protected float X3, Y3;
   protected float X4, Y4;
   protected float X5, Y5;
-  
+
   protected float X6, Y6;
   protected float X7, Y7;
   protected float X8, Y8;
   protected float X9, Y9;
   protected float X10, Y10;
-  
+
   protected float X11, Y11;
   protected float X12, Y12;
   protected float X13, Y13;
@@ -47,24 +47,26 @@ class Asteroids extends Mover {
     if (random(1) >= 0.8) {
       numOfAsteroids = 2;
     }
+
     HIT = false;
     HIT2 = false;
     HIT3 = false;
+
     //Asteroid 1
-    X1 = random(-5, 20);
-    Y1 = random(20, 40);
+    X1 = random(-3, 10);
+    Y1 = random(25, 30);
 
-    X2 = random(20, 40);
-    Y2 = random(-10, 10);
+    X2 = random(25, 30);
+    Y2 = random(-3, 3);
 
-    X3 = random(-10, 10);
-    Y3 = random(-30, -20);
+    X3 = random(-3, 3);
+    Y3 = random(-30, -25);
 
-    X4 = random(-20, -10);
-    Y4 = random(-20, -10);
+    X4 = random(-25, -20);
+    Y4 = random(-18, -12);
 
     X5 = random(-25, -20);
-    Y5 = random(10, 20);
+    Y5 = random(18, 12);
 
     //Asteroid 2
     X6 = random(-8, -10);
@@ -81,13 +83,13 @@ class Asteroids extends Mover {
 
     X10 = random(3, 6);
     Y10 = random(-7, -3);
-    
+
     X11 = random(-1, 1);
     Y11 = random(-1, 1);
 
     X12 = random(2, -4);
     Y12 = random(-5, -7);
-    
+
     //Asteroid 3
   }
 
