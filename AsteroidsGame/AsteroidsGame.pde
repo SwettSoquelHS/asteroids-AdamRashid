@@ -96,6 +96,8 @@ void game() {
   //This will auto fire the bullet if super is activated
   if(spaceship.getSuperMode()){
     spaceship.fireBullet();
+    fill(#0FD9FF);
+    ellipse(spaceship.getXpos(), spaceship.getXpos(), 30, 30);
     if(spaceship.getAmmo() == 0){
       spaceship.setSuperMode(false);
       spaceship.setAmmo(50);
@@ -213,7 +215,7 @@ void ultimate() {
     superMeter = 1000;
   }
 
-  if (key == 't' && superMeter >= 1000) {
+  if ((key == 't' || key == 'T') && superMeter >= 1000) {
     spaceship.setAmmo(500);
     spaceship.setIndex(0);
     spaceship.setSuperMode(true);
