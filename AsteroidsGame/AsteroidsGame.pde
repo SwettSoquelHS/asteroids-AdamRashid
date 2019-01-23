@@ -1,4 +1,7 @@
 float x_pos, y_pos; //<>//
+float angle = 0;
+float targetAngle = 0;
+float easing = 1;
 int NUM_OF_ASTEROIDS = 0;
 int savedTime;
 int superTime;
@@ -6,7 +9,10 @@ int superLength = 2000;
 int totalTime = 5000;
 int score = 0;
 int gameScreen = 1;
+int controls = 1; //0 is keyboard; 1 is mouse
 int superMeter = 0;
+int tempScore = 0;
+int reloadRate;
 Asteroids[] spacefield;
 Star[] stars;
 Ship spaceship;
@@ -18,6 +24,7 @@ boolean ROTATE_RIGHT = false;
 boolean MOVE_FORWARD = false;
 boolean LIGHT_FIRE = false;
 boolean SHOOTING_BULLET = false;
+boolean RELOAD_BULLET = false;
 
 void setup() {
   size(700, 500);
@@ -31,8 +38,8 @@ void setup() {
   spaceship = new Ship(x_pos, y_pos);
 
   for (int i = 0; i < stars.length - 1; i++) {
-    int x_Pos = (int)random(0, 700);
-    int y_Pos = (int)random(0, 600);
+    int x_Pos = (int)random(0, width);
+    int y_Pos = (int)random(0, height);
     stars[i] = new Star(x_Pos, y_Pos);
   }
 
@@ -87,16 +94,27 @@ void game() {
   for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
     spacefield[i].show();
   }
- 
+
   //This fires the bullet
   if (SHOOTING_BULLET) {
     spaceship.fireBullet();
   }
+
+  if (RELOAD_BULLET) {
+    reload();
+  }
   
+  /*
+  if(SHOOTING_BULLET && spaceship.getAmmo() == 0 && !spaceship.getSuperMode()){
+    reloadRate = millis() + 3000;
+    reload();
+  }
+  */
   //This will auto fire the bullet if super is activated
-  if(spaceship.getSuperMode()){
+  if (spaceship.getSuperMode()) {
     spaceship.fireBullet();
-    if(spaceship.getAmmo() == 0){
+    if (spaceship.getAmmo() == 0) {
+      tempScore = score;
       spaceship.setSuperMode(false);
       spaceship.setAmmo(50);
       spaceship.setIndex(0);
@@ -121,12 +139,22 @@ void game() {
     }
   }
 
+  if (controls == 1) {
+    angle = atan2( mouseY - spaceship.getYpos(), mouseX - spaceship.getXpos());
+    float dir = (angle - targetAngle) / TWO_PI;
+    dir -= round( dir );
+    dir *= TWO_PI;
+
+    targetAngle += dir * easing;
+
+    spaceship.setDir(targetAngle * (180/PI));
+  }
 
 
   for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
-    spaceship.destroyShip(spacefield[i].getXpos(), spacefield[i].getYpos());
-    spaceship.destroyShip(spacefield[i].getXpos2(), spacefield[i].getYpos2());
-    spaceship.destroyShip(spacefield[i].getXpos3(), spacefield[i].getYpos3());
+    //spaceship.destroyShip(spacefield[i].getXpos(), spacefield[i].getYpos());
+    //spaceship.destroyShip(spacefield[i].getXpos2(), spacefield[i].getYpos2());
+    //spaceship.destroyShip(spacefield[i].getXpos3(), spacefield[i].getYpos3());
   }
 
   if (LIGHT_FIRE && spaceship.getShipLife() > 0) {
@@ -166,58 +194,83 @@ void gameOver() {
 }
 
 void mousePressed() {
+  if (controls == 1) {
+    if (mouseButton == RIGHT && gameScreen == 1) {
+      MOVE_FORWARD = true;
+      LIGHT_FIRE = true;
+    }
+    if (mouseButton == LEFT && gameScreen == 1 && !RELOAD_BULLET) {
+      SHOOTING_BULLET = true;
+    }
+  }
   if (gameScreen == 2) {
     reset();
   }
 }
-void keyPressed() {
-  if (keyCode == LEFT || key == 'a' || key == 'A') {
-    ROTATE_LEFT = true;
-  } else if (keyCode == RIGHT|| key == 'd' || key == 'D') {
-    ROTATE_RIGHT = true;
-  } else if (keyCode == UP || key == 'w' || key == 'W') {
-    MOVE_FORWARD = true;
-    LIGHT_FIRE = true;
-  }
 
-  if (key == ' ') {
-    if (spaceship.getAmmo() > 0) {
-      SHOOTING_BULLET = true;
+void mouseReleased() {
+  if (mouseButton == RIGHT && gameScreen == 1) {
+    MOVE_FORWARD = false;
+    LIGHT_FIRE = false;
+  }
+  if (mouseButton == LEFT && gameScreen == 1) {
+    SHOOTING_BULLET = false;
+  }
+}
+void keyPressed() {
+  if (controls == 0) {
+    if (keyCode == LEFT || key == 'a' || key == 'A') {
+      ROTATE_LEFT = true;
+    } else if (keyCode == RIGHT|| key == 'd' || key == 'D') {
+      ROTATE_RIGHT = true;
+    } else if (keyCode == UP || key == 'w' || key == 'W') {
+      MOVE_FORWARD = true;
+      LIGHT_FIRE = true;
+    }
+
+    if (key == ' ') {
+      if (spaceship.getAmmo() > 0 && !RELOAD_BULLET) {
+        SHOOTING_BULLET = true;
+      }
     }
   }
 }
 
 void keyReleased() {
-  if (keyCode == LEFT || key == 'a' || key == 'A') {
-    ROTATE_LEFT = false;
-  } else if (keyCode == RIGHT || key == 'd' || key == 'D') {
-    ROTATE_RIGHT = false;
-  } else if (keyCode == UP || key == 'w' || key == 'W') {
-    MOVE_FORWARD = false;
-    LIGHT_FIRE = false;
+  if (controls == 0) {
+    if (keyCode == LEFT || key == 'a' || key == 'A') {
+      ROTATE_LEFT = false;
+    } else if (keyCode == RIGHT || key == 'd' || key == 'D') {
+      ROTATE_RIGHT = false;
+    } else if (keyCode == UP || key == 'w' || key == 'W') {
+      MOVE_FORWARD = false;
+      LIGHT_FIRE = false;
+    }
+
+    if (key == ' ') {
+      SHOOTING_BULLET = false;
+    }
   }
 
-  if ((key == 'r' || key == 'R') && !spaceship.getSuperMode()) {
-    spaceship.reload();
-  }
-
-  if (key == ' ') {
-    SHOOTING_BULLET = false;
+  if ((key == 'r' || key == 'R') && !spaceship.getSuperMode() && !RELOAD_BULLET) {
+    reloadRate = millis() + 3000;
+    RELOAD_BULLET = true;
   }
 }
 
 void ultimate() {
-  superMeter = score;
+  superMeter = score - tempScore;
 
-  if (superMeter >= 1000) {
-    superMeter = 1000;
+  if (superMeter >= 2000) {
+    superMeter = 2000;
   }
 
-  if (key == 't' && superMeter >= 1000) {
-    spaceship.setAmmo(500);
+  if (key == 't' && superMeter >= 2000 && !spaceship.getSuperMode()) {
+    spaceship.setAmmo(300);
     spaceship.setIndex(0);
     spaceship.setSuperMode(true);
   }
+
   pushMatrix();
   stroke(0);
   fill(255);
@@ -227,12 +280,13 @@ void ultimate() {
   pushMatrix();
   stroke(0);
   fill(#03FF22);
-  rect(width/2 - 250, height - 30, superMeter/2, 20);
+  rect(width/2 - 250, height - 30, superMeter/4, 20);
   popMatrix();
 }
 
 void reset() {
   score = 0;
+  tempScore = 0;
   savedTime = millis();
   x_pos = width/2.0;
   y_pos = height/2.0;
@@ -242,6 +296,7 @@ void reset() {
   MOVE_FORWARD = false;
   LIGHT_FIRE = false;
   SHOOTING_BULLET = false;
+  RELOAD_BULLET = false;
   spaceship = new Ship(x_pos, y_pos);
 
   for (int i = 0; i < stars.length - 1; i++) {
@@ -314,7 +369,7 @@ void create_fire() {
 
 void createAsteroids() {
   int passedTime = millis() - savedTime;
-  if (passedTime > totalTime) {
+  if (passedTime > totalTime && NUM_OF_ASTEROIDS < spacefield.length) {
     for (int i = 0; i < 5; i++) {
       float x = random(0, width);
       float y;
@@ -329,5 +384,22 @@ void createAsteroids() {
     println("Five Seconds");
     println("Num of asteroids " + NUM_OF_ASTEROIDS);
     savedTime = millis();
+  }
+}
+
+void reload() {
+  int passedTime = millis();
+  println("Running");
+  SHOOTING_BULLET = false;
+  pushMatrix();
+  noStroke();
+  fill(255);
+  rect(width - 60, height - 40, (passedTime - (reloadRate - 3000))/60, 5);
+  popMatrix();
+
+
+  if (passedTime > reloadRate) {
+    spaceship.reload();
+    RELOAD_BULLET = false;
   }
 }
