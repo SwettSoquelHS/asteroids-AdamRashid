@@ -117,7 +117,7 @@ class Ship extends Mover {
     if (!SUPER_MODE) {
       for (int i = 0; i < INDEX_OF_SHOT; i++) {
         for (int j = 0; j < NUM_OF_ASTEROIDS; j++) {
-          spacefield[j].crack(shot[i].getXpos(), shot[i].getYpos());
+          spacefield[j].crack(shot[i].getXpos(), shot[i].getYpos()); 
         }
       }
     }

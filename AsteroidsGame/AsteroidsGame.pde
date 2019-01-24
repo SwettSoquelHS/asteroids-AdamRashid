@@ -1,4 +1,4 @@
-float x_pos, y_pos; //<>//
+float x_pos, y_pos; //<>// //<>//
 float angle = 0;
 float targetAngle = 0;
 float easing = 1;
@@ -103,7 +103,6 @@ void game() {
   if (RELOAD_BULLET) {
     reload();
   }
-  
   /*
   if(SHOOTING_BULLET && spaceship.getAmmo() == 0 && !spaceship.getSuperMode()){
     reloadRate = millis() + 3000;
@@ -152,9 +151,9 @@ void game() {
 
 
   for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
-    //spaceship.destroyShip(spacefield[i].getXpos(), spacefield[i].getYpos());
-    //spaceship.destroyShip(spacefield[i].getXpos2(), spacefield[i].getYpos2());
-    //spaceship.destroyShip(spacefield[i].getXpos3(), spacefield[i].getYpos3());
+    spaceship.destroyShip(spacefield[i].getXpos(), spacefield[i].getYpos());
+    spaceship.destroyShip(spacefield[i].getXpos2(), spacefield[i].getYpos2());
+    spaceship.destroyShip(spacefield[i].getXpos3(), spacefield[i].getYpos3());
   }
 
   if (LIGHT_FIRE && spaceship.getShipLife() > 0) {
