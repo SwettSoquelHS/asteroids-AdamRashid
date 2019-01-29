@@ -87,6 +87,7 @@ void game() {
   spaceship.show();
   spaceship.checkCollision();
   createAsteroids();
+  asteroidsBounce();
   for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
     spacefield[i].move();
   }
@@ -254,6 +255,18 @@ void keyReleased() {
   if ((key == 'r' || key == 'R') && !spaceship.getSuperMode() && !RELOAD_BULLET) {
     reloadRate = millis() + 3000;
     RELOAD_BULLET = true;
+  }
+}
+
+void asteroidsBounce(){
+  for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
+    for (int j = 0; j < NUM_OF_ASTEROIDS; j++) {
+      if(dist(spacefield[i].getXpos(), spacefield[i].getYpos(), spacefield[j].getXpos(), spacefield[j].getYpos()) < 25 && j != i && !spacefield[i].getHit() && !spacefield[j].getHit()){
+        println("Collision");
+        spacefield[i].setDir(180 - spacefield[i].getDir());
+        spacefield[j].setDir(180 - spacefield[j].getDir());
+      }
+    }
   }
 }
 
