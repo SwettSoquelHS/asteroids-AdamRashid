@@ -15,7 +15,7 @@ class Ship extends Mover {
     this.yPos = yPos;
     SHIP_LIFE = 1;
     speed = 0;
-    direction = 45;
+    direction = 270;
     shot = new Shoot[50];
     superShot = new Shoot[500];
     SUPER_MODE = false;
@@ -28,10 +28,10 @@ class Ship extends Mover {
       stroke(0);
       translate(xPos, yPos);
       rotate(radians(direction));
+      triangle(-4, 0, -20, 14, -20, -14);
       triangle(-10, -10, -10, 10, 20, 0);
       triangle(6, 4, -10, 4, -10, 15);
       triangle(6, -4, -10, -4, -10, -15);
-      triangle(-4, 0, -20, 14, -20, -14);
       stroke(#3FFAD9);
       line(-6, 11, 4, 11);
       line(-6, 10, 4, 10);
