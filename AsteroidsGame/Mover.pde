@@ -5,17 +5,17 @@ interface Movable {
   /*
     Return the x location of the Movable
    */
-  float getXpos();
+  float getX();
 
   /*
     Return the y location of the Movable
    */
-  float getYpos();
+  float getY();
 
   /*
     Return the direction of the Movable in degrees.
    */
-  float getDir();
+  float getDirection();
 
   /*
    Return the speed of the Movable.
@@ -35,7 +35,7 @@ interface Movable {
   /* 
    Sets the direction of the Movable
    */
-  void setDir(float newDirectionInDegrees);
+  void setDirection(float newDirectionInDegrees);
 
   /* 
    Sets the speed of the Movable
@@ -103,9 +103,6 @@ abstract class Mover implements Movable {
   void update() {
     x = x + speed*(float)Math.cos(radians(direction));
     y = y + speed*(float)Math.sin(radians(direction));
-
-    //todo: You need to decide what to do when X is less than 0 or greater than width
-    //todo: You need to decide what to do when Y is less than 0 or greater than height
   }
 
 
@@ -121,11 +118,29 @@ abstract class Mover implements Movable {
   /*
     TODO: Part 4: Implement collision detection
    */
-  boolean collidingWith(Movable object){
-    float distance = dist(x, y, object.getXpos(), object.getYpos());
-    boolean touching = distance < (radius + object.getRadius());
+  boolean collidingWith(Movable object) {
+     float distance = dist(x, y, object.getX(), object.getY());
+     boolean touching = distance < (radius + object.getRadius());
      return touching; 
   }
   
-  //TODO: Part I: implement the methods of Moveable interface - delete this comment
+  boolean nearCollidingWith(Movable object) {
+     float distance = dist(x, y, object.getX(), object.getY());
+     boolean touching = distance < (radius + object.getRadius())+2;
+     return touching; 
+  }
+  
+  boolean collidingWithEdgeX() {
+     boolean leftedge = x + 300 <= 0;
+     boolean rightedge = x - 300 >= width;
+     return leftedge||rightedge;
+  }
+  
+  boolean collidingWithEdgeY() {
+     boolean topedge = y + 300 <= 0;
+     boolean bottomedge = y - 300 >= height;
+     return topedge||bottomedge;
+  }
+  
+  //TODO: Part I: implement the methods of Moveable interface -leftedge||rightedge|| delete this comment
 }

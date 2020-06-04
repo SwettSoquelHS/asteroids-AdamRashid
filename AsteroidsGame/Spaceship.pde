@@ -1,199 +1,126 @@
-class Ship extends Mover {
-  protected float xPos, yPos;
-  protected float speed, direction;
-  protected int SHIP_LIFE;
-  protected int INDEX_OF_SHOT = 0;
-  protected int ammo = 50;
-  protected int fireSpeed = 150; //Amount of delay between each bullet in milliseconds
-  protected int shotTime;
-  protected Shoot[] shot;
-  protected Shoot[] superShot;
-  protected boolean SUPER_MODE;
-  Ship(float xPos, float yPos) {
-    super(xPos, yPos);
-    this.xPos = xPos;
-    this.yPos = yPos;
-    SHIP_LIFE = 1;
-    speed = 0;
-    direction = 270;
-    shot = new Shoot[50];
-    superShot = new Shoot[500];
-    SUPER_MODE = false;
+  /*
+  Spaceship class
+    Should extend Mover class and implement show.
+    You may add additional methods to this class, for example "rotate" and "accelerate" 
+    might be useful.
+*/
+class Spaceship extends Mover implements Movable {
+  protected int shield;
+  protected boolean OVERDRIVE;
+  protected boolean MAX_OVERDRIVE;
+  protected int shieldTime;
+  
+  Spaceship(float x, float y, float speed, float direction) {
+    super(x,y,speed,direction);
+    radius = 30;
   }
-
-  void show() {
-    if (SHIP_LIFE > 0) {
-      pushMatrix();
-      fill(#3FFAD9);
-      stroke(0);
-      translate(xPos, yPos);
-      rotate(radians(direction));
-      triangle(-4, 0, -20, 14, -20, -14);
-      triangle(-10, -10, -10, 10, 20, 0);
-      triangle(6, 4, -10, 4, -10, 15);
-      triangle(6, -4, -10, -4, -10, -15);
-      stroke(#3FFAD9);
-      line(-6, 11, 4, 11);
-      line(-6, 10, 4, 10);
-      line(6, 10, 4, 11);
-      line(-6, -11, 4, -11);
-      line(-6, -10, 4, -10);
-      line(6, -10, 4, -11);
-      popMatrix();
-    }
-
-    //This show the bullet on the screen and moves it
-    if (!SUPER_MODE) {
-      for (int i = 0; i < INDEX_OF_SHOT; i++) {
-        shot[i].move();
-        shot[i].show();
-      }
-    }
-
-    if (SUPER_MODE) {
-      for (int i = 0; i < INDEX_OF_SHOT; i++) {
-        superShot[i].move();
-        superShot[i].show();
-      }
-    }
+  float getX() {
+    return x;
   }
-
-
-  void move() {
-    xPos = xPos + speed * (float)Math.cos(radians(direction));
-    yPos = yPos + speed * (float)Math.sin(radians(direction));
-
-    if (xPos > width + 20)
-      xPos = -20;
-    if (xPos < -20)
-      xPos = width + 20;
-    if (yPos > height + 20)
-      yPos = -20;
-    if (yPos < -20)
-      yPos = height + 20;
+  float getY() {
+    return y;
   }
-
-  void destroyShip(float x, float y) {
-    if (SHIP_LIFE > 0) {
-      if (dist(x, y, xPos, yPos) < 40) {
-        pushMatrix();
-        stroke(0);
-        fill(#FC4800);
-        translate(xPos, yPos);
-        ellipse(0, 0, 50, 50);
-        popMatrix();
-        SHIP_LIFE--;
-      }
-    }
+  float getDirection() {
+    return direction;
   }
-
-  void fireBullet() {
-    //This defines the bullet in the array as well as limit the firerate of the ship
-    if (INDEX_OF_SHOT < shot.length && !SUPER_MODE) {
-      fireRate();
-    }
-
-    if (SUPER_MODE) {
-      if (INDEX_OF_SHOT < superShot.length) {
-        superShot[INDEX_OF_SHOT] = new Shoot(xPos, yPos, direction, INDEX_OF_SHOT); 
-        INDEX_OF_SHOT++;
-        ammo--;
-      }
-    }
+  float getRadius() {
+    return radius;
   }
-
-  void reload() {
-    if (!SUPER_MODE)
-      ammo = shot.length;
-
-    if (SUPER_MODE)
-      ammo = superShot.length;
-
-    INDEX_OF_SHOT = 0;
-  }
-
-  void checkCollision() {
-    //This checks for collision between the bullet and the asteroids
-    if (!SUPER_MODE) {
-      for (int i = 0; i < INDEX_OF_SHOT; i++) {
-        for (int j = 0; j < NUM_OF_ASTEROIDS; j++) {
-          spacefield[j].crack(shot[i].getXpos(), shot[i].getYpos()); 
-        }
-      }
-    }
-    
-    if(SUPER_MODE){
-      for (int i = 0; i < INDEX_OF_SHOT; i++) {
-        for (int j = 0; j < NUM_OF_ASTEROIDS; j++) {
-          spacefield[j].crack(superShot[i].getXpos(), superShot[i].getYpos());
-        }
-      }
-    }
-  }
-
-  void fireRate() {
-    int passedTime = millis() - shotTime;
-    if (passedTime > fireSpeed) {
-      shot[INDEX_OF_SHOT] = new Shoot(xPos, yPos, direction, INDEX_OF_SHOT); 
-      INDEX_OF_SHOT++;
-      ammo--;
-      println("pew");
-      shotTime = millis();
-    }
-  }
-
-  float getXpos() {
-    return xPos;
-  }
-
-  float getYpos() {
-    return yPos;
-  }
-
   float getSpeed() {
     return speed;
   }
-
-  float getShipLife() {
-    return SHIP_LIFE;
+  boolean overdrive() {
+    return OVERDRIVE;
   }
-
-  float getDir() {
-    return direction;
+  boolean maxOverdrive() {
+    return MAX_OVERDRIVE;
   }
-
-  void setDir(float dir) {
-    direction = dir;
+  int shieldLevel() {
+    return shield;
   }
-
-  void setSpeed(float s) {
-    speed = s;
+  void show() {
+    rectMode(CORNER);
+    pushMatrix();
+    translate(x,y);
+    rotate(radians(direction));
+    if (shield > 0) {
+      noFill();
+      switch (shield) {
+        case 1:
+          stroke(0,125,255,85);
+          break;
+        case 2:
+          stroke(0,125,255,170);
+          break;
+        case 3:
+          stroke(0,125,255);
+          break;
+      }
+      strokeWeight(5);
+      ellipse(0,0,radius*2,radius*2);
+    }
+    noStroke();
+    fill(#8800FF);
+    rect(-30,-20,55,40);
+    if (OVERDRIVE)
+      fill(0,0,255);
+    else if (MAX_OVERDRIVE)
+      fill(0,255,255);
+    else
+      fill(100);
+    rect(20,-20,10,40,0,10,10,0);
+    rect(5,-5,10,10);
+    fill(#5500AA);
+    rect(-25,-15,25,30);
+    popMatrix();
   }
-
-  float getRadius() {
-    return 0;
+  void setSpeed(float newSpeed) {
+    speed = newSpeed;
   }
-
-  int getAmmo() {
-    return ammo;
+  void setDirection(float newDirection) {
+    direction = newDirection;
   }
-
-  void setAmmo(int x) {
-    ammo = x;
+  void update() {
+    x = x + speed*(float)Math.cos(radians(direction));
+    y = y + speed*(float)Math.sin(radians(direction));
+    if (shield > 0 && millis() - shieldTime >= 60000) {
+      shield--;
+      shieldTime = millis();
+      if (shield == 0)
+        radius = 30;
+    }
+    if (x < 0)
+      x = 0;
+    if (y < 0)
+      y = 0;
+    if (x > width)
+      x = width;
+    if (y > height)
+      y = height;
   }
-
-  void setIndex(int x) {
-    INDEX_OF_SHOT = x;
+  void overdriveOn() {
+    OVERDRIVE = true;
   }
-  void setFireRate(int x) {
-    fireSpeed = x;
+  void overdriveOff() {
+    OVERDRIVE = false;
+    MAX_OVERDRIVE = false;
   }
-
-  void setSuperMode(boolean x) {
-    SUPER_MODE = x;
+  void maxOverdriveOn() {
+    MAX_OVERDRIVE = true;
   }
-  
-  boolean getSuperMode(){
-    return SUPER_MODE;
+  void shieldUp() {
+    if (shield < 3) {
+      shield++;
+      shieldTime = millis();
+      radius = 40;
+    }
+  }
+  void shieldDown() {
+    if (shield > 0) {
+      shield--;
+      if (shield == 0) {
+        radius = 30;
+      }
+    }
   }
 }

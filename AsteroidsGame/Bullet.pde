@@ -1,38 +1,35 @@
-class Shoot extends Ship {
-  private float xPos, yPos;
-  private float direction;
-  private int index;
-  private boolean BULLET_LIFE = true;
-  Shoot(float x_Pos, float y_Pos, float direction, int index) {
-    super(x_Pos, y_Pos);
-    xPos = x_Pos;
-    yPos = y_Pos;
-    this.direction = direction;
+class Bullet extends Mover implements Movable {
+  Bullet(float x, float y, float speed, float direction) {
+    super(x,y,speed,direction);
+    radius = 10;
   }
-
+  float getX() {
+    return x;
+  }
+  float getY() {
+    return y;
+  }
+  float getDirection() {
+    return direction;
+  }
+  float getRadius() {
+    return radius;
+  }
+  float getSpeed() {
+    return speed;
+  }
   void show() {
-    if (SHIP_LIFE > 0 && BULLET_LIFE) {
-      fill(#FAFF00);
-      ellipse(xPos, yPos, 5, 5);
-    }
+    pushMatrix();
+    translate(x,y);
+    fill(0,255,255);
+    noStroke();
+    ellipse(0,0,radius*2,radius*2);
+    popMatrix();
   }
-
-  void move() {
-    if (BULLET_LIFE) {
-      xPos = xPos + 12 * (float)Math.cos(radians(direction));
-      yPos = yPos + 12 * (float)Math.sin(radians(direction));
-    }
+  void setDirection(float newDirection) {
+    direction = newDirection;
   }
-
-  float getXpos() {
-    return xPos;
-  }
-
-  float getYpos() {
-    return yPos;
-  }
-  
-  void setLife(boolean t){
-    BULLET_LIFE = t;
+  void setSpeed(float newSpeed) {
+    speed = newSpeed;
   }
 }

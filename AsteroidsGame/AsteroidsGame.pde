@@ -1,455 +1,629 @@
-float x_pos, y_pos;  //<>//
-float angle = 0;
-float targetAngle = 0;
-float easing = 1;
-int NUM_OF_ASTEROIDS = 0;
-int savedTime;
-int superTime;
-int superLength = 2000;
-int totalTime = 5000;
-int score = 0;
-int gameScreen = 0;//0 is Home Screen; 1 is Game Screen; 2 is Game Over
-int controls = 3; //0 is keyboard; 1 is mouse
-int superMeter = 0;
-int tempScore = 0;
-int reloadRate;
-Asteroids[] spacefield;
+import java.util.ArrayList;
+
+/* * * * * * * * * * * * * * * * * * * * * * *
+ Class variable declarations here
+ */
+Spaceship player1;
 Star[] stars;
-Ship spaceship;
-float[][] fire = new float [100000][15];
-float currentflamef, nextflamef;
-int currentflame=0, nextflame;
-boolean ROTATE_LEFT = false;
-boolean ROTATE_RIGHT = false;
-boolean MOVE_FORWARD = false;
-boolean LIGHT_FIRE = false;
-boolean SHOOTING_BULLET = false;
-boolean RELOAD_BULLET = false;
+Cell cell;
+EMP emp;
+ArrayList<Bullet> bullets;
+ArrayList<Asteroid> asteroids;
 
-void setup() {
-  size(700, 500);
-  cursor(CROSS);
-  savedTime = millis();
-  x_pos = width/2.0;
-  y_pos = height/2.0;
-  spacefield = new Asteroids[500];
+/*
+  Track User keyboard input
+ */
+boolean ROTATE_LEFT;  //User is pressing <-
+boolean ROTATE_RIGHT; //User is pressing ->
+boolean MOVE_FORWARD; //User is pressing ^ arrow
+boolean SPACE_BAR;    //User is pressing space bar
+boolean FIRED;
+boolean FIRE_READY;
+boolean VALID_SPAWN;
+boolean GAME;
+boolean STARTUP;
+boolean MENU;
+boolean COLLISION;
+boolean POWERUP;
+boolean OVERDRIVE;
+boolean MAX_OVERDRIVE;
+boolean EMP_ACTIVE;
+boolean CELL;
+boolean WAITING = false;
+float playerSpeed;
+float playerDirection;
+float asteroidX;
+float asteroidY;
+float asteroidSpeed;
+float asteroidDirection;
+float s1;
+float s2;
+float d1;
+float d2;
+float startupTime;
+float speedMult;
+int fireSpeed;
+int fireTime;
+int overdriveTime;
+int cellTime;
+int cellSpawnTime;
+int asteroidCap = 30;
+int respawnCooldown;
+int spawnZone;
+int score;
+int time;
+int energy;
+int charges;
+
+/* * * * * * * * * * * * * * * * * * * * * * *
+  Initialize all of your variables and game state here
+ */
+public void setup() {
+  MENU = true;
+  GAME = true;
+  FIRE_READY = true;
+  OVERDRIVE = false;
+  cellTime = millis();
   stars = new Star[200];
-  smooth();
-  noStroke();
-  spaceship = new Ship(x_pos, y_pos);
-
+  cellSpawnTime = (int)random(15000,30000);
+  respawnCooldown = (int)random(5)+5;
+  startupTime = 180;
+  score = 0;
+  energy = 0;
+  charges = 0;
+  speedMult = 1;
+  size(986, 655);
+  bullets = new ArrayList<Bullet>();
+  asteroids = new ArrayList<Asteroid>();
+  //initialize your asteroid array and fill it
+  asteroids = new ArrayList<Asteroid>();
+  spawnZone = (int)random(4);
+  switch (spawnZone) {
+    case 0:
+      asteroidX = (float)(width*Math.random());
+      asteroidY = (float)(-200*Math.random()-100);
+      asteroidDirection = (float)(45*Math.random()+45);
+      break;
+    case 1:
+      asteroidX = (float)(width*Math.random());
+      asteroidY = height+((float)(300*Math.random()+150));
+      asteroidDirection = (float)(255*Math.random()+45);
+      break;
+    case 2:
+      asteroidX = (float)(-200*Math.random()-100);
+      asteroidY = (float)(height*Math.random());
+      asteroidDirection = 180-(float)(135*Math.random()+45);
+      break;
+    case 3:
+      asteroidX = width+((float)(200*Math.random()+150));
+      asteroidY = (float)((height)*Math.random());
+      asteroidDirection = (float)(135*Math.random()+45);
+      break;
+  }
+  asteroidSpeed = (float)(2*Math.random()+1);
+  Asteroid asteroid = new Asteroid(asteroidX, asteroidY, asteroidSpeed, asteroidDirection, false);
+  asteroids.add(asteroid);
+  
+  //initialize ship
+  player1 = new Spaceship(width/2,height/2,0,0);
+  
+  //initialize starfield
   for (int i = 0; i < stars.length - 1; i++) {
     int x_Pos = (int)random(0, width);
     int y_Pos = (int)random(0, height);
     stars[i] = new Star(x_Pos, y_Pos);
   }
-
-  for (NUM_OF_ASTEROIDS = 0; NUM_OF_ASTEROIDS < 5; NUM_OF_ASTEROIDS++) {
-    float x = random(0, width);
-    float y;
-    double checker = Math.random();
-    if (checker >= 0.5) {
-      y = height + 20;
-    } else {
-      y = -20;
-    }
-    spacefield[NUM_OF_ASTEROIDS] = new Asteroids(x, y, NUM_OF_ASTEROIDS);
-  }
+  /*starField = new Star[100];
+  for (int i=0; i<starField.length; i++) {
+    starField[i] = new Star();
+  }*/
+  fireTime = 0;
+  cell = new Cell(-500,-500);
+  emp = new EMP(-500,-500);
 }
 
-void draw() {
-  if (gameScreen == 0) {
-    homeScreen();
-  } else if (gameScreen == 1) {
-    game();
-  } else if (gameScreen == 2) {
-    gameOver();
+
+/* * * * * * * * * * * * * * * * * * * * * * *
+  Drawing work here
+ */
+public void draw() {
+  if (!GAME) {
+    sleep(3000);
+    setup();
   }
-}
-
-void homeScreen() {
-  background(255);
-  textAlign(CENTER);
-  fill(52, 73, 94);
-  textSize(70);
-  text("Asteroids", width/2, height/2);
-  textSize(22); 
-  text("Mouse", width/2 - 150, height-30);
-  text("Keyboard", width/2 + 120, height-30);
-
-  if (mouseX > width/2 - 200 && mouseX < width/2 - 100 && mouseY > height- 50 && mouseY < height) {
-    if (mousePressed) {
-      controls = 1;
-      gameScreen = 1;
-    } else {
-      cursor(HAND);
+  background(0);
+  if (MENU) {
+    fill(255);
+    rectMode(CENTER);
+    textAlign(CENTER);
+    textSize(100);
+    text("Asteroids",width/2,150);
+    textSize(40);
+    //text("AP Computer Science - Michael Vollmer",width/2,180);
+    fill(50);
+    noStroke();
+    rect(width/2,300,600,120);
+    fill(0,255,0);
+    textSize(100);
+    text("Start Game",width/2,335);
+    fill(255);
+    textSize(40);
+    textAlign(LEFT);
+    text("Controls:",150,440);
+    textSize(25);
+    text("Up - Move",150,480);
+    text("Left/Right - Steer",150,510);
+    text("Space - Fire",150,540);
+    textSize(40);
+    text("Power-ups:",560,440);
+    textSize(25);
+    fill(255,255,0);
+    text("Z - Overdrive",560,480);
+    text("X - Shield",560,510);
+    fill(255,125,0);
+    text("C - Max Overdrive",560,540);
+    fill(255,0,0);
+    text("V - EMP Blast",560,570);
+    fill(255);
+    textSize(20);
+    textAlign(CENTER);
+    text("You can get energy for power ups by destroying asteroids and collecting cells.",width/2,height-50);
+    text("To use a given power up, the energy bar must be completely filled with the color shown.",width/2,height-25);
+  } else if (STARTUP) {
+    for (int i = 0; i < stars.length- 1; i++) {
+      stars[i].move();
     }
-  } else {
-    cursor(CROSS);
-  }
-
-  if (mouseX > width/2 + 50 && mouseX < width/2 + 180 && mouseY > height- 50 && mouseY < height) {
-    if (mousePressed) {
-      controls = 0;
-      gameScreen = 1;
-    } else {
-      cursor(HAND);
-    }
-  } else {
-    cursor(CROSS);
-  }
-}
-
-void game() {
-  fill(0, 80);
-  rect(0, 0, width, height);
-  fill(255);
-  textSize(12);
-  text(spaceship.getAmmo(), width - 40, height - 10);
-  text("Score: " + score, width - 70, 20);
-
-  if (spaceship.getAmmo() == 0)
-    text("Reload", width - 40, height - 20);
-
-  for (int i = 0; i < stars.length- 1; i++) {
-    stars[i].move();
-  }
-  for (int i = 0; i < stars.length- 1; i++) {
+    for (int i = 0; i < stars.length- 1; i++) {
     stars[i].show();
-  }
-
-  ultimate();
-  spaceship.move();
-  spaceship.show();
-  spaceship.checkCollision();
-  createAsteroids();
-  //asteroidsBounce();
-  for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
-    spacefield[i].move();
-  }
-
-  for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
-    spacefield[i].show();
-  }
-
-  //This fires the bullet
-  if (SHOOTING_BULLET) {
-    spaceship.fireBullet();
-  }
-
-  if (RELOAD_BULLET) {
-    reload();
-  }
-  /*
-  if(SHOOTING_BULLET && spaceship.getAmmo() == 0 && !spaceship.getSuperMode()){
-   reloadRate = millis() + 3000;
-   reload();
-   }
-   */
-  //This will auto fire the bullet if super is activated
-  if (spaceship.getSuperMode()) {
-    spaceship.fireBullet();
-    if (spaceship.getAmmo() == 0) {
-      tempScore = score;
-      spaceship.setSuperMode(false);
-      spaceship.setAmmo(50);
-      spaceship.setIndex(0);
     }
-  }
 
-  //Update x,y position
-  if (ROTATE_LEFT) 
-    spaceship.setDir(spaceship.getDir() - 10.0);
-  if (ROTATE_RIGHT)
-    spaceship.setDir(spaceship.getDir() + 10.0);
-  if (MOVE_FORWARD == true) {
-    if (spaceship.getSpeed() < 8) {
-      spaceship.setSpeed(spaceship.getSpeed() + 0.1);
+    //for (int i=0; i<starField.length; i++) {
+      //starField[i].show();
+    //}
+    textSize(100);
+    textAlign(CENTER);
+    if (millis() - startupTime < 2000) {
+      fill(255,0,0);
+      text("Get Ready!",width/2,height/2);
+    } else {
+      fill(0,255,0);
+      text("GO!",width/2,height/2);
+    }
+    if (millis() - startupTime >= 3000) {
+      STARTUP = false;
     }
   } else {
-    if (spaceship.getSpeed() > 0) {
-      spaceship.setSpeed(spaceship.getSpeed() - 0.15);
+    //for (int i=0; i<starField.length; i++) {
+      //starField[i].show();
+    //}
+    for (int i = 0; i < stars.length- 1; i++) {
+      stars[i].move();
     }
-    if (spaceship.getSpeed() < 0) {
-      spaceship.setSpeed(0);
+    for (int i = 0; i < stars.length- 1; i++) {
+    stars[i].show();
     }
-  }
-
-  if (controls == 1) {
-    angle = atan2( mouseY - spaceship.getYpos(), mouseX - spaceship.getXpos());
-    float dir = (angle - targetAngle) / TWO_PI;
-    dir -= round( dir );
-    dir *= TWO_PI;
-
-    targetAngle += dir * easing;
-
-    spaceship.setDir(targetAngle * (180/PI));
-  }
-
-
-  for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
-    spaceship.destroyShip(spacefield[i].getXpos(), spacefield[i].getYpos());
-    spaceship.destroyShip(spacefield[i].getXpos2(), spacefield[i].getYpos2());
-    spaceship.destroyShip(spacefield[i].getXpos3(), spacefield[i].getYpos3());
-  }
-
-  if (LIGHT_FIRE && spaceship.getShipLife() > 0) {
-    create_fire();
-  }
-
-  for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
-    if (spacefield[i].getHit()) {
-      score += 100;
-      spacefield[i].setHit(false);
+    for (Object o: bullets) {
+      Bullet b = (Bullet)o;
+      b.show();
+      b.update();
     }
-
-    if (spacefield[i].getHit2()) {
-      score += 50;
-      spacefield[i].setHit2(false);
-    }
-
-    if (spacefield[i].getHit3()) {
-      score += 50;
-      spacefield[i].setHit3(false);
-    }
-  }
-
-  update_fire(); 
-  draw_fire();
-
-  if (spaceship.getShipLife() == 0) {
-    gameScreen = 2;
-  }
-}
-
-void gameOver() {
-  fill(255);
-  textSize(30);
-  textAlign(CENTER);
-  text("Game Over!", width/2, height/2);
-  }
-
-void mousePressed() {
-  if (controls == 1) {
-    if (mouseButton == RIGHT && gameScreen == 1) {
-      if (dist((int)spaceship.getXpos(), (int)spaceship.getYpos(), (int)mouseX, (int)mouseY) > 40) {
-        MOVE_FORWARD = true;
-        LIGHT_FIRE = true;
-      }
-    }
-    if (mouseButton == LEFT && gameScreen == 1 && !RELOAD_BULLET) {
-      SHOOTING_BULLET = true;
-    }
-  }
-  if (gameScreen == 2) {
-    reset();
-  }
-}
-
-void mouseReleased() {
-  if (mouseButton == RIGHT && gameScreen == 1) {
-    MOVE_FORWARD = false;
-    LIGHT_FIRE = false;
-  }
-  if (mouseButton == LEFT && gameScreen == 1) {
-    SHOOTING_BULLET = false;
-  }
-}
-void keyPressed() {
-  if (controls == 0) {
-    if (keyCode == LEFT || key == 'a' || key == 'A') {
-      ROTATE_LEFT = true;
-    } else if (keyCode == RIGHT|| key == 'd' || key == 'D') {
-      ROTATE_RIGHT = true;
-    } else if (keyCode == UP || key == 'w' || key == 'W') {
-      MOVE_FORWARD = true;
-      LIGHT_FIRE = true;
-    }
-
-    if (key == ' ') {
-      if (spaceship.getAmmo() > 0 && !RELOAD_BULLET) {
-        SHOOTING_BULLET = true;
-      }
-    }
-  }
-}
-
-void keyReleased() {
-  if (controls == 0) {
-    if (keyCode == LEFT || key == 'a' || key == 'A') {
-      ROTATE_LEFT = false;
-    } else if (keyCode == RIGHT || key == 'd' || key == 'D') {
-      ROTATE_RIGHT = false;
-    } else if (keyCode == UP || key == 'w' || key == 'W') {
-      MOVE_FORWARD = false;
-      LIGHT_FIRE = false;
-    }
-
-    if (key == ' ') {
-      SHOOTING_BULLET = false;
-    }
-  }
-
-  if ((key == 'r' || key == 'R') && !spaceship.getSuperMode() && !RELOAD_BULLET) {
-    reloadRate = millis() + 3000;
-    RELOAD_BULLET = true;
-  }
-}
-
-void asteroidsBounce() {
-  for (int i = 0; i < NUM_OF_ASTEROIDS; i++) {
-    for (int j = 0; j < NUM_OF_ASTEROIDS; j++) {
-      if (dist(spacefield[i].getXpos(), spacefield[i].getYpos(), spacefield[j].getXpos(), spacefield[j].getYpos()) < 25 && j != i && !spacefield[i].getHit() && !spacefield[j].getHit()) {
-        println("Collision");
-        spacefield[i].setDir(spacefield[i].getDir() * -1);
-        //spacefield[j].setDir(spacefield[j].getDir() * -1);
-      }
-    }
-  }
-}
-
-void ultimate() {
-  superMeter = score - tempScore;
-
-  if (superMeter >= 2000) {
-    superMeter = 2000;
-  }
-
-  if (key == 't' && superMeter >= 2000 && !spaceship.getSuperMode()) {
-    spaceship.setAmmo(300);
-    spaceship.setIndex(0);
-    spaceship.setSuperMode(true);
-  }
-
-  pushMatrix();
-  stroke(0);
-  fill(255);
-  rect(width/2 - 250, height - 30, 500, 20);
-  popMatrix();
-
-  pushMatrix();
-  stroke(0);
-  fill(#03FF22);
-  rect(width/2 - 250, height - 30, superMeter/4, 20);
-  popMatrix();
-}
-
-void reset() {
-  score = 0;
-  tempScore = 0;
-  savedTime = millis();
-  x_pos = width/2.0;
-  y_pos = height/2.0;
-  NUM_OF_ASTEROIDS = 0;
-  ROTATE_LEFT = false;
-  ROTATE_RIGHT = false;
-  MOVE_FORWARD = false;
-  LIGHT_FIRE = false;
-  SHOOTING_BULLET = false;
-  RELOAD_BULLET = false;
-  spaceship = new Ship(x_pos, y_pos);
-
-  for (int i = 0; i < stars.length - 1; i++) {
-    int x_Pos = (int)random(0, 700);
-    int y_Pos = (int)random(0, 600);
-    stars[i] = new Star(x_Pos, y_Pos);
-  }
-
-  for (NUM_OF_ASTEROIDS = 0; NUM_OF_ASTEROIDS < 5; NUM_OF_ASTEROIDS++) {
-    float x = random(0, width);
-    float y;
-    double checker = Math.random();
-    if (checker >= 0.5) {
-      y = height + 20;
+    emp.show();
+    if (EMP_ACTIVE) {
+      if (emp.getRadius() >= 1000)
+        EMP_ACTIVE = false;
+      else
+        emp.expand();
     } else {
-      y = -20;
+      emp.reset();
+      emp.setX(-500);
+      emp.setY(-500);
     }
-    spacefield[NUM_OF_ASTEROIDS] = new Asteroids(x, y, NUM_OF_ASTEROIDS);
-  }
-  gameScreen = 1;
-}
-
-void update_fire() {
-  for (int flame=0; flame<100000; flame++) {
-    if (fire[flame][0]==1) {
-
-      if (get(int(fire[flame][1]), int(fire[flame][2]))>200) {
-        fire[flame][0]=0;
+    if (millis() - cellTime >= cellSpawnTime)
+      spawnCell();
+    rectMode(CORNER);
+    player1.show();
+    cell.show();
+    //Check bullet collisions
+    hitCheck();
+  
+    //TODO: Part II, Update each of the Asteroids internals
+    for (Asteroid a1: asteroids) {
+      a1.show();
+      a1.update();
+      COLLISION = false;
+      for (Asteroid a2: asteroids) {
+        if (a1 != a2 && a1.collidingWith(a2)) {
+          COLLISION = true;
+          if (!a1.isNoCollide() && !a2.isNoCollide()) {
+            s1 = a1.getSpeed();
+            s2 = a2.getSpeed();
+            d1 = a1.getDirection();
+            d2 = a2.getDirection();
+            a1.setSpeed(s2);
+            a1.setDirection(d2);
+            a2.setSpeed(s1);
+            a2.setDirection(d1);
+          }
+        }
       }
-      fire[flame][1]=fire[flame][1]+fire[flame][5]*cos(fire[flame][3]);
-      fire[flame][2]=fire[flame][2]+fire[flame][5]*sin(fire[flame][3]);
-    }
-    fire[flame][7]+=1;
-    if (fire[flame][7]>fire[flame][6]) {
-      fire[flame][0]=0;
-    }
-  }
-}
-void draw_fire() {
-  for (int flame=0; flame<currentflame; flame++) {
-    if (fire[flame][0]==1) {
-      fill(fire[flame][9], fire[flame][10], 0, 40);
-      pushMatrix();
-      noStroke();
-      translate(fire[flame][1], fire[flame][2]);
-      rotate(fire[flame][8]);
-      rect(0, 0, fire[flame][4], fire[flame][4]);
-      popMatrix();
-    }
-  }
-}
-void create_fire() {
-  nextflame=currentflame+10;
-  for (int flame=currentflame; flame<nextflame; flame++) {
-    fire[flame][0]=1;
-    fire[flame][1]= spaceship.getXpos();
-    fire[flame][2]= spaceship.getYpos();
-    fire[flame][3]=PI + radians(spaceship.getDir());//angle
-    fire[flame][4]=random(5, 10);//size
-    fire[flame][5]=random(.5, 2);//speed
-    fire[flame][6]=random(5, 20)/fire[flame][5];//maxlife
-    fire[flame][7]=0;//currentlife
-    fire[flame][8]=random(0, TWO_PI);
-    fire[flame][9]=random(200, 255);//red
-    fire[flame][10]=random(0, 150);//green
-  }
-  currentflame=nextflame;
-}
-
-
-void createAsteroids() {
-  int passedTime = millis() - savedTime;
-  if (passedTime > totalTime && NUM_OF_ASTEROIDS < spacefield.length) {
-    for (int i = 0; i < 5; i++) {
-      float x = random(0, width);
-      float y;
-      double checker = Math.random();
-      if (checker >= 0.5) {
-        y = height + 20;
-      } else {
-        y = -20;
+      if (!COLLISION && a1.isNoCollide()) {
+        a1.allowCollisions();
       }
-      spacefield[NUM_OF_ASTEROIDS++] = new Asteroids(x, y, NUM_OF_ASTEROIDS);
     }
-    println("Five Seconds");
-    println("Num of asteroids " + NUM_OF_ASTEROIDS);
-    savedTime = millis();
+    
+    
+    //Check for asteroid collisions against other asteroids and alter course
+    for (int i=0; i<asteroids.size(); i++) {
+      Asteroid a = asteroids.get(i);
+      if (a.collidingWithEdgeX()) {
+        asteroids.remove(i);
+      }
+      if (a.collidingWithEdgeY()) {
+        asteroids.remove(i);
+      }
+    }
+  
+    //Update spaceship
+    playerSpeed = player1.getSpeed();
+    playerDirection = player1.getDirection();
+    if (MOVE_FORWARD) {
+      if (player1.getSpeed() < 5 * speedMult) {
+        player1.setSpeed(playerSpeed += 1 * speedMult);
+      }
+    } else {
+      if (player1.getSpeed() > 0) {
+        player1.setSpeed(playerSpeed -= 1 * speedMult);
+        if (player1.getSpeed() < 0) {
+          player1.setSpeed(0);
+        }
+      }
+    }
+    if (ROTATE_LEFT) {
+      player1.setDirection(playerDirection -= 5 * speedMult);
+    }
+    if (ROTATE_RIGHT) {
+      player1.setDirection(playerDirection += 5 * speedMult);
+    }
+    if (SPACE_BAR) {
+      if (FIRE_READY && !FIRED) {
+        fire();
+        FIRED = true;
+        if (OVERDRIVE || MAX_OVERDRIVE)
+          FIRED = false;
+        FIRE_READY = false;
+        fireTime = millis();
+      }
+    }
+    player1.update();
+    if (OVERDRIVE) {
+      fireSpeed = 200;
+    } else if (MAX_OVERDRIVE) {
+      fireSpeed = 100;
+    } else {
+      fireSpeed = 320;
+    }
+    if (millis() - fireTime >= fireSpeed) {
+      FIRE_READY = true;
+    }
+    if (millis() - overdriveTime >= 8000) {
+      OVERDRIVE = false;
+      MAX_OVERDRIVE = false;
+      player1.overdriveOff();
+      speedMult = 1;
+    }
+    if (!OVERDRIVE && !MAX_OVERDRIVE) {
+      POWERUP = false;
+    }
+      
+    bulletCheck();
+    checkCell();
+    if (respawnCooldown == 0 && asteroids.size() < asteroidCap) {
+      if (!EMP_ACTIVE)
+        asteroidRespawn();
+      respawnCooldown = (int)random(5)+5;
+    }
+    if (respawnCooldown > 0)
+      respawnCooldown--;
+    //Check for ship collision agaist asteroids
+    for (int i=0; i<asteroids.size(); i++) {
+      Asteroid a = asteroids.get(i);
+      if (player1.collidingWith(a)) {
+        if (player1.shieldLevel() > 0) {
+          asteroids.remove(i);
+          player1.shieldDown();
+        } else {
+          GAME = false;
+        }
+      }
+    }
+    
+    if (!GAME) {
+      fill(255,0,0);
+      rectMode(CENTER);
+      textAlign(CENTER);
+      textSize(100);
+      text("GAME OVER",width/2,height/2);
+    }
+    //Draw spaceship & and its bullets
+    //TODO: Part I, for now just render ship
+    //TODO: Part IV - we will use a new feature in Java called an ArrayList, 
+    //so for now we'll just leave this comment and come back to it in a bit. 
+    
+    //Update score
+    noStroke();
+    fill(0,255,0);
+    rectMode(CENTER);
+    textAlign(RIGHT);
+    textSize(50);
+    text("Score: "+score,977,50);
+    fill(130);
+    rectMode(CORNER);
+    rect(10,10,210,30);
+    switch (charges) {
+      case 0:
+        fill(0);
+        break;
+      case 1:
+        fill(255,255,0);
+        break;
+      case 2:
+        fill(255,125,0);
+        break;
+      case 3:
+        fill(255,0,0);
+        break;
+      case 4:
+        fill(255);
+        break;
+    }
+    rect(15,15,200,20);
+    switch (charges) {
+      case 0:
+        fill(255,255,0);
+        break;
+      case 1:
+        fill(255,125,0);
+        break;
+      case 2:
+        fill(255,0,0);
+        break;
+      case 3:
+        fill(255);
+        break;
+    }
+    rect(15,15,10*energy,20);
   }
 }
 
-void reload() {
-  int passedTime = millis();
-  println("Running");
-  SHOOTING_BULLET = false;
-  pushMatrix();
-  noStroke();
-  fill(255);
-  rect(width - 60, height - 40, (passedTime - (reloadRate - 3000))/60, 5);
-  popMatrix();
 
 
-  if (passedTime > reloadRate) {
-    spaceship.reload();
-    RELOAD_BULLET = false;
+/* * * * * * * * * * * * * * * * * * * * * * *
+  Record relevent key presses for our game
+ */
+void keyPressed() {
+  if (key == CODED) {
+    if (keyCode == LEFT) {
+      ROTATE_LEFT = true;
+    } else if ( keyCode == RIGHT ) {
+      ROTATE_RIGHT = true;
+    } else if (keyCode == UP) {
+      MOVE_FORWARD = true;
+    } //else if (keyCode == SHIFT) {
+      //spawnCell();
+    //}
+  }
+  if (key == 'z' || key == 'Z') {
+    if (charges >= 1 && !POWERUP) {
+      overdrive();
+      charges--;
+    }
+  } else if (key == 'x' || key == 'X') {
+    if (charges >= 1 && player1.shieldLevel() < 3) {
+      player1.shieldUp();
+      charges--;
+    }
+  } else if (key == 'c' || key == 'C') {
+    if (charges >= 2 && !POWERUP) {
+      maxOverdrive();
+      charges -= 2;
+    }
+  } else if (key == 'v' || key == 'V') {
+    if (charges >= 3 && !POWERUP && !EMP_ACTIVE) {
+      activateEMP();
+      charges -= 3;
+    }
+  }
+  //32 is spacebar
+  if (keyCode == 32) {  
+    SPACE_BAR = true;
+  }
+}
+
+
+
+/* * * * * * * * * * * * * * * * * * * * * * *
+  Record relevant key releases for our game.
+ */
+void keyReleased() {  
+  if (key == CODED) { 
+    if (keyCode == LEFT) {
+      ROTATE_LEFT = false;
+    } else if (keyCode == RIGHT) {
+      ROTATE_RIGHT = false;
+    } else if (keyCode == UP) {
+      MOVE_FORWARD = false;
+    }
+  }
+  if (keyCode == 32) {
+    SPACE_BAR = false;
+    FIRED = false;
+  }
+}
+
+void mouseClicked() {
+  if (mouseX>=193 && mouseX<=793 && mouseY>=240 && mouseY<=360 && MENU) {
+    MENU = false;
+    STARTUP = true;
+    startupTime = millis();
+    despawnCell();
+  }
+}
+
+void fire() {
+  bullets.add(new Bullet(player1.getX(),player1.getY(),15,player1.getDirection()));
+}
+
+void asteroidRespawn() {
+  VALID_SPAWN = false;
+  while (!VALID_SPAWN) {
+    spawnZone = (int)random(4);
+    switch (spawnZone) {
+      case 0:
+        asteroidX = (float)(width*Math.random());
+        asteroidY = (float)(-200*Math.random()-100);
+        asteroidDirection = (float)(45*Math.random()+45);
+        break;
+      case 1:
+        asteroidX = (float)(width*Math.random());
+        asteroidY = height+((float)(300*Math.random()+150));
+        asteroidDirection = (float)(225*Math.random()+45);
+        break;
+      case 2:
+        asteroidX = (float)(-200*Math.random()-100);
+        asteroidY = (float)(height*Math.random());
+        asteroidDirection = 180-(float)(135*Math.random()+45);
+        break;
+      case 3:
+        asteroidX = width+((float)(200*Math.random()+150));
+        asteroidY = (float)((height)*Math.random());
+        asteroidDirection = (float)(135*Math.random()+45);
+        break;
+    }
+    asteroidSpeed = (float)(2*Math.random()+1);
+    Asteroid asteroid = new Asteroid(asteroidX, asteroidY, asteroidSpeed, asteroidDirection, false);
+    VALID_SPAWN = true;
+    for (Asteroid a: asteroids) {
+      if (a.nearCollidingWith(asteroid)) {
+        VALID_SPAWN = false;
+      }
+    }
+    if (VALID_SPAWN) {
+      asteroids.add(asteroid);
+    }
+  }
+}
+
+void bulletCheck() {
+  for (int i=0; i<bullets.size(); i++) {
+    Bullet b = (Bullet)bullets.get(i);
+    if (b.getX()<-100 || b.getX()>width+100) {
+      bullets.remove(i);
+    } else if (b.getY()<-100 || b.getY()>height+100) {
+      bullets.remove(i);
+    }
+  }
+}
+
+void hitCheck() {
+  for (int i=0; i<asteroids.size(); i++) {
+    Asteroid a = (Asteroid)asteroids.get(i);
+    for(int j=0; j<bullets.size(); j++) {
+      Bullet b = (Bullet)bullets.get(j);
+      if (b.collidingWith(a)) {
+        if (!a.isFrag()) {
+          Asteroid frag1 = new Asteroid(a.getX(), a.getY(), a.getSpeed(), a.getDirection()+30, true);
+          Asteroid frag2 = new Asteroid(a.getX(), a.getY(), a.getSpeed(), a.getDirection()-30, true);
+          asteroids.add(frag1);
+          asteroids.add(frag2);
+        }
+        asteroids.remove(i);
+        bullets.remove(j);
+        if (charges < 3) {
+          if (!POWERUP) {
+            energy++;
+            if (energy >= 20) {
+              energy -= 20;
+              charges++;
+            }
+          }
+        }
+        score++;
+      }
+    }
+    if (emp.collidingWith(a)) {
+      if (!a.isFrag()) {
+        Asteroid frag1 = new Asteroid(a.getX(), a.getY(), a.getSpeed(), a.getDirection()+30, true);
+        Asteroid frag2 = new Asteroid(a.getX(), a.getY(), a.getSpeed(), a.getDirection()-30, true);
+        asteroids.add(frag1);
+        asteroids.add(frag2);
+      }
+      score++;
+      asteroids.remove(i);
+    }
+  }
+}
+
+void checkCell() {
+  if (CELL) {
+    if (player1.collidingWith(cell) && charges < 4) {
+      despawnCell();
+      energy += cell.getValue();
+      if (energy >= 20) {
+        if (charges+1 == 4)
+          energy = 0;
+        else
+          energy -= 20;
+        charges++;
+      }
+    }
+  }
+}
+
+void spawnCell() {
+  cell.setX((float)((width-40)*Math.random()+20));
+  cell.setY((float)((height-40)*Math.random()+20));
+  cell.newValue();
+  CELL = true;
+  cellTime = millis();
+  cellSpawnTime = (int)random(15000,30000);
+}
+
+void despawnCell() {
+  cell.setX(-500);
+  cell.setY(-500);
+  cellTime = millis();
+  CELL = false;
+  cellSpawnTime = (int)random(15000,30000);
+}
+
+void overdrive() {
+  OVERDRIVE = true;
+  POWERUP = true;
+  overdriveTime = millis();
+  speedMult = 1.2;
+  player1.overdriveOn();
+}
+
+void maxOverdrive() {
+  MAX_OVERDRIVE = true;
+  POWERUP = true;
+  overdriveTime = millis();
+  speedMult = 1.2;
+  player1.maxOverdriveOn();
+}
+
+void activateEMP() {
+  emp.setX(player1.getX());
+  emp.setY(player1.getY());
+  EMP_ACTIVE = true;
+}
+
+void sleep(int wait) {
+  time = millis();
+  WAITING = true;
+  while (WAITING) {
+    if(millis() - time >= wait) {
+      WAITING = false;
+    }
   }
 }
